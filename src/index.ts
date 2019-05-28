@@ -3,6 +3,7 @@ import express from "express";
 import mongoose from "mongoose";
 
 import authEndpoints from "./auth";
+import postEndpoints from "./posts";
 import userEndpoints from "./users";
 
 mongoose.connect(process.env.MONGO_URL || "");
@@ -13,6 +14,7 @@ app.use(express.urlencoded({extended: true}));
 
 [
     authEndpoints,
+    postEndpoints,
     userEndpoints
 ].forEach(fn => fn(app));
 

@@ -14,7 +14,7 @@ export default (app: Application) => {
             }
 
             if (await compare(req.body.pass, user.pass)) {
-                res.status(200).json({ok: true, token: genToken(req.body.user, req.body.jwt_exp || "2h")});
+                res.status(200).json({ok: true, token: genToken(user._id, req.body.jwt_exp || "2h")});
             } else {
                 return res.status(400).json({error: "Password is incorrect."});
             }
