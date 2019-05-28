@@ -3,7 +3,7 @@ import { hash } from "bcrypt";
 
 import { User } from "./interfaces";
 import { Models } from "./models";
-import { genToken, checkToken } from "./utils";
+import { genToken, checkToken, getIdFromUser, postsPerPage } from "./utils";
 
 export default (app: Application) => {
     app.post("/users", async (req, res, next) => {
@@ -73,9 +73,60 @@ export default (app: Application) => {
     app.get(["/users/:user", "/userid/:userId"], async (req, res, next) => {
         try {
             let user;
-            if (req.params.user) {user = await Models.User.findOne({user: req.params.user}, "-pass");}
-            else {user = await Models.User.findOne({_id: req.params.userId}, "-pass");}
+            if (req.params.user) {
+                user = await Models.User.findOne({user: req.params.user}, "-pass");
+            } else {
+                user = await Models.User.findOne({_id: req.params.userId}, "-pass");
+            }
             return user ? res.json(user) : res.status(404).json({error: "User not found."});
+        } catch (e) {
+            next(e);
+        }
+    });
+
+    app.get(["/users/:user/all/:page?", "/userid/:userId/all/:page?"], async (req, res, next) => {
+        try {
+            let user;
+            if (req.params.user) {
+                user = await getIdFromUser(req.params.user);
+            } else {
+                user = req.params.userId
+            }
+            let start_post = req.params.page ? req.params.page * postsPerPage : 0;
+            const posts = await Models.Post.find({user_id: user}).sort({_id: -1}).limit(postsPerPage).skip(start_post);
+            return posts ? res.json(posts) : res.status(404).json({error: "No posts found."});
+        } catch (e) {
+            next(e);
+        }
+    });
+
+    app.get(["/users/:user/posts/:page?", "/userid/:userId/posts/:page?"], async (req, res, next) => {
+        try {
+            let user;
+            if (req.params.user) {
+                user = await getIdFromUser(req.params.user);
+            } else {
+                user = req.params.userId
+            }
+            let start_post = req.params.page ? req.params.page * postsPerPage : 0;
+            const posts = await Models.Post.find({user_id: user, parent_id: {$exists: false}}).sort({_id: -1}).limit(postsPerPage).skip(start_post);
+            return posts ? res.json(posts) : res.status(404).json({error: "No posts found."});
+        } catch (e) {
+            next(e);
+        }
+    });
+
+    app.get(["/users/:user/replies/:page?", "/userid/:userId/replies/:page?"], async (req, res, next) => {
+        try {
+            let user;
+            if (req.params.user) {
+                user = await getIdFromUser(req.params.user);
+            } else {
+                user = req.params.userId
+            }
+            let start_post = req.params.page ? req.params.page * postsPerPage : 0;
+            const posts = await Models.Post.find({user_id: user, title: {$exists: false}}).sort({_id: -1}).limit(postsPerPage).skip(start_post);
+            return posts ? res.json(posts) : res.status(404).json({error: "No posts found."});
         } catch (e) {
             next(e);
         }

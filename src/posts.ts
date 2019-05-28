@@ -2,7 +2,7 @@ import { Application } from "express";
 
 import { Post } from "./interfaces";
 import { Models } from "./models";
-import { checkToken } from "./utils";
+import { checkToken, postsPerPage } from "./utils";
 
 export default (app: Application) => {
     app.post("/posts", checkToken, async (req, res, next) => {
@@ -103,6 +103,16 @@ export default (app: Application) => {
                     }
                 });
             });
+        } catch (e) {
+            next(e);
+        }
+    });
+
+    app.get("/posts/:post/replies/:page?", async (req, res, next) => {
+        try {
+            let start_post = req.params.page ? req.params.page * postsPerPage : 0;
+            const posts = await Models.Post.find({parent_id: req.params.post}).sort({_id: -1}).limit(postsPerPage).skip(start_post);
+            return posts ? res.json(posts) : res.status(404).json({error: "No posts found."});
         } catch (e) {
             next(e);
         }

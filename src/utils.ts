@@ -35,6 +35,16 @@ export const checkToken = async (req: Request, res: Response, next: NextFunction
     }
 }
 
+export const getIdFromUser = async (user: string) => {
+    let result = "";
+    await Models.User.findOne({user: user}, function(_, user) {
+        if (user != null) result = user._id;
+    });
+    return result;
+}
+
+export const postsPerPage = 50;
+
 interface Verification {
     id: string;
 }
