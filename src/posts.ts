@@ -72,7 +72,7 @@ export default (app: Application) => {
         try {
             Models.Post.findOne({_id: req.params.post}, "user_id").then(async function (post) {
                 if (post == null) return res.status(404).json({error: "Post not found."});
-                if (res.locals.user_id != post.user_id) return res.status(400).json({error: "Invalid token for post submitter."});
+                if (res.locals.user_id != post.user_id) return res.status(400).json({error: "Invalid token, not original submitter."});
                 
                 if (req.body.title && post.title) post.title = req.body.title;
                 if (req.body.text) post.text = req.body.text;

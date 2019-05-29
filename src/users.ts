@@ -26,7 +26,7 @@ export default (app: Application) => {
                     }
                     return res.status(500).json({error: "Internal server error."});
                 } else {
-                    res.status(200).json({ok: true, token: genToken(user._id, req.body.jwt_exp || "2h")});
+                    res.status(200).json({ok: true, _id: user._id, token: genToken(user._id, req.body.jwt_exp || "2h")});
                 }
             });
         } catch (e) {
@@ -49,7 +49,7 @@ export default (app: Application) => {
                     }
                     return res.status(500).json({error: "Internal server error."});
                 } else {
-                    res.status(200).json({ok: true});
+                    res.status(200).json({ok: true, _id: user._id, token: genToken(user._id, req.body.jwt_exp || "2h")});
                 }
             });
         } catch (e) {
