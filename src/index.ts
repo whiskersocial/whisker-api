@@ -1,6 +1,7 @@
 import "dotenv/config";
 import express from "express";
 import mongoose from "mongoose";
+import cors from "cors";
 
 import authEndpoints from "./auth";
 import postEndpoints from "./posts";
@@ -11,6 +12,7 @@ mongoose.connect(process.env.MONGO_URL || "");
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
+app.use(cors());
 
 [
     authEndpoints,
