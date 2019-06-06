@@ -125,7 +125,7 @@ export default (app: Application) => {
                 user = req.params.userId
             }
             let start_post = req.params.page ? req.params.page * postsPerPage : 0;
-            const posts = await Models.Post.find({user_id: user, title: {$exists: false}}).sort({_id: -1}).limit(postsPerPage).skip(start_post);
+            const posts = await Models.Post.find({user_id: user, parent_id: {$ne: null}}).sort({_id: -1}).limit(postsPerPage).skip(start_post);
             return posts ? res.json(posts) : res.status(404).json({error: "No posts found."});
         } catch (e) {
             next(e);
