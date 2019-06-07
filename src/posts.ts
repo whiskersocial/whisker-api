@@ -61,8 +61,13 @@ export default (app: Application) => {
 
     app.get("/posts/:post", async (req, res, next) => {
         try {
-            res.locals.post = await Models.Post.findOne({_id: req.params.post});
-            return res.locals.post ? res.json(res.locals.post) : res.status(404).json({error: "Post not found."});
+            Models.Post.findOne({_id: req.params.post}).lean().exec(async function (err, post) {
+                if (err) res.status(500).json({error: "Internal server error."});
+                if (!post) res.status(404).json({error: "Post not found."});
+                let userName = await Models.User.findOne({_id: post.user_id});
+                post.user = userName ? userName.user : -1;
+                return res.json(post);
+            });
         } catch (e) {
             next(e);
         }
@@ -110,9 +115,17 @@ export default (app: Application) => {
 
     app.get("/posts/:post/replies/:page?", async (req, res, next) => {
         try {
+            let result = {length: 0, pages: 0, replies: []}
+            result.length = await Models.Post.countDocuments({parent_id: req.params.post});
+            result.pages = Math.floor((result.length + postsPerPage - 1) / postsPerPage);
             let start_post = req.params.page ? req.params.page * postsPerPage : 0;
-            const posts = await Models.Post.find({parent_id: req.params.post}).sort({_id: -1}).limit(postsPerPage).skip(start_post);
-            return posts ? res.json(posts) : res.status(404).json({error: "No posts found."});
+            const posts = await Models.Post.find({parent_id: req.params.post}).sort({_id: -1}).limit(postsPerPage).skip(start_post).lean();
+            for (let i = 0; i < posts.length; i++) {
+                let userName = await Models.User.findOne({_id: posts[i].user_id});
+                posts[i].user = userName ? userName.user : -1;   
+            }
+            result.replies = posts;
+            return posts ? res.json(result) : res.status(404).json({error: "No posts found."});
         } catch (e) {
             next(e);
         }
