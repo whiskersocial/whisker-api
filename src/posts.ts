@@ -115,7 +115,7 @@ export default (app: Application) => {
 
     app.get("/posts/:post/replies/:page?", async (req, res, next) => {
         try {
-            let result = {length: 0, pages: 0, replies: []}
+            let result = {length: 0, pages: 0, posts: []}
             result.length = await Models.Post.countDocuments({parent_id: req.params.post});
             result.pages = Math.floor((result.length + postsPerPage - 1) / postsPerPage);
             let start_post = req.params.page ? req.params.page * postsPerPage : 0;
@@ -124,7 +124,7 @@ export default (app: Application) => {
                 let userName = await Models.User.findOne({_id: posts[i].user_id});
                 posts[i].user = userName ? userName.user : -1;   
             }
-            result.replies = posts;
+            result.posts = posts;
             return posts ? res.json(result) : res.status(404).json({error: "No posts found."});
         } catch (e) {
             next(e);

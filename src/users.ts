@@ -127,7 +127,7 @@ export default (app: Application) => {
     app.get(["/users/:user/replies/:page?", "/userid/:userId/replies/:page?"], async (req, res, next) => {
         try {
             let user;
-            let result = {length: 0, pages: 0, replies: null}
+            let result = {length: 0, pages: 0, posts: null}
             if (req.params.user) {
                 user = await getIdFromUser(req.params.user);
             } else {
@@ -137,7 +137,7 @@ export default (app: Application) => {
             result.pages = Math.floor((result.length + postsPerPage - 1) / postsPerPage);
             let start_post = req.params.page ? req.params.page * postsPerPage : 0;
             const posts = await Models.Post.find({user_id: user, parent_id: {$ne: null}}).sort({_id: -1}).limit(postsPerPage).skip(start_post).lean();
-            result.replies = posts;
+            result.posts = posts;
             return posts ? res.json(result) : res.status(404).json({error: "No posts found."});
         } catch (e) {
             next(e);
