@@ -8,7 +8,8 @@ export interface PostModel extends Document, Post {};
 export namespace Models {
     export const User = model<UserModel>("User", new Schema({
         user: {type: String, required: true, unique: true},
-        pass: {type: String, required: true}
+        pass: {type: String, required: true},
+        bio: String
     }));
 
     export const Post = model<PostModel>("Post", new Schema({

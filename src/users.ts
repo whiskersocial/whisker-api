@@ -11,6 +11,7 @@ export default (app: Application) => {
             let userData: Partial<User> = req.body;
             userData.user = req.body.user || "";
             userData.pass = await hash(req.body.pass, 12);
+            userData.bio = req.body.bio || "";
 
             let user = new Models.User(userData);
             try {
@@ -41,6 +42,7 @@ export default (app: Application) => {
 
             if (req.body.user) user.user = req.body.user;
             if (req.body.pass) user.pass = await hash(req.body.pass, 12);
+            if (req.body.bio) user.bio =req.body.bio;
 
             await user.save(function (err) {
                 if (err) {
