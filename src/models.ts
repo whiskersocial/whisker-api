@@ -16,8 +16,7 @@ export namespace Models {
         user_id: {type: String, required: true},
         title: String,
         parent_id: String,
-        text: String,
-        del: {type: Boolean, required: true, default: false}
+        text: String
     }, {
         timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' }
     }));

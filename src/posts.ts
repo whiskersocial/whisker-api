@@ -64,11 +64,17 @@ export default (app: Application) => {
             Models.Post.findOne({_id: req.params.post}).lean().exec(async function (err, post) {
                 if (err) res.status(500).json({error: "Internal server error."});
                 if (!post) res.status(404).json({error: "Post not found."});
-                let userName = await Models.User.findOne({_id: post.user_id});
-                post.user = userName ? userName.user : {deleted: true};
-                if (post.del) {
+
+                if (post.user_id == "-1") {
                     post.user = {deleted: true};
+                } else {
+                    let userName = await Models.User.findOne({_id: post.user_id});
+                    post.user = userName ? userName.user : {deleted: true};
+                    if (userName == null) {
+                        post.user_id = "-1";
+                    }
                 }
+                
                 return res.json(post);
             });
         } catch (e) {
@@ -105,7 +111,7 @@ export default (app: Application) => {
                 
                 post.title = "[DELETED]";
                 post.text = "[DELETED]";
-                post.del = true;
+                post.user_id = "-1";
 
                 await post.save(function (err) {
                     if (err) {
@@ -127,14 +133,19 @@ export default (app: Application) => {
             result.pages = Math.floor((result.length + postsPerPage - 1) / postsPerPage);
             let start_post = req.params.page ? req.params.page * postsPerPage : 0;
             const posts = await Models.Post.find({parent_id: req.params.post}).sort({updated_at: -1}).limit(postsPerPage).skip(start_post).lean();
+
             for (let i = 0; i < posts.length; i++) {
-                if (posts[i].del) {
+                if (posts[i].user_id == "-1"){
                     posts[i].user = {deleted: true};
                     continue;
                 }
                 let userName = await Models.User.findOne({_id: posts[i].user_id});
                 posts[i].user = userName ? userName.user : {deleted: true};
+                if (userName == null) {
+                    posts[i].user_id = "-1";
+                }
             }
+            
             result.posts = posts;
             return posts ? res.json(result) : res.status(404).json({error: "No posts found."});
         } catch (e) {
