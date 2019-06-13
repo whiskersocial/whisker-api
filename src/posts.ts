@@ -96,15 +96,18 @@ export default (app: Application) => {
 
     app.delete("/posts/:post", checkToken, async (req, res, next) => {
         try {
-            Models.Post.findOne({_id: req.params.post}, "user_id").then(function (post) {
+            Models.Post.findOne({_id: req.params.post}, "user_id").then(async function (post) {
                 if (post == null) return res.status(404).json({error: "Post not found."});
-                if (res.locals.user_id != post.user_id) return res.status(400).json({error: "Invalid token for post submitter."});
+                if (res.locals.user_id != post.user_id) return res.status(400).json({error: "Invalid token, not original submitter."});
+                
+                post.title = "[DELETED]";
+                post.text = "[DELETED]";
 
-                Models.Post.deleteOne({_id: req.params.post}).then(function (result) {
-                    if (result.ok) {
-                        res.status(200).json({ok: true});
+                await post.save(function (err) {
+                    if (err) {
+                        return res.status(500).json({error: "Internal server error."});
                     } else {
-                        res.status(500).json({error: "Internal server error."});
+                        res.status(200).json({ok: true});
                     }
                 });
             });
