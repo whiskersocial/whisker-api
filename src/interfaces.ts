@@ -11,4 +11,5 @@ export interface Post {
     title: string;
     parent_id: string;
     text: string;
+    del: boolean;
 }
